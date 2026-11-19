@@ -1,0 +1,21 @@
+name: CI
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - run: npm install --global corepack@0.35.0
+      - run: corepack pnpm install --frozen-lockfile
+      - run: corepack pnpm typecheck
+      - run: corepack pnpm lint
+      - run: corepack pnpm test:run
+      - run: corepack pnpm build

@@ -1,0 +1,135 @@
+import { screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
+import { ProfileView } from "@/views/profile";
+import { renderWithIntl } from "./render-with-intl";
+
+vi.mock("sonner", () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
+}));
+
+describe("profile view", () => {
+  it("renders account deletion controls", () => {
+    renderWithIntl(
+      <ProfileView
+        canChangePassword
+        canDeleteAccount
+        email="jane@example.com"
+        fullName="Jane Doe"
+      />,
+    );
+
+    expect(
+      screen.getByRole("heading", { name: "Profile" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("jane@example.com")).toBeInTheDocument();
+    expect(screen.queryByText("Usage limits")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Change password" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Delete account" }),
+    ).toBeInTheDocument();
+  });
+
+  it("hides account deletion when it is unavailable", () => {
+    renderWithIntl(
+      <ProfileView
+        canChangePassword
+        canDeleteAccount={false}
+        email="jane@example.com"
+        fullName="Jane Doe"
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Delete account" })).not.toBeInTheDocument();
+  });
+
+  it("validates confirmation email without calling the endpoint", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.spyOn(window, "fetch");
+    renderWithIntl(
+      <ProfileView
+        canChangePassword
+        canDeleteAccount
+        email="jane@example.com"
+        fullName="Jane Doe"
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Delete account" }));
+    await user.click(
+      screen.getAllByRole("button", { name: "Delete account" }).at(-1)!,
+    );
+
+    expect(
+      await screen.findByText(
+        "Enter your current email to confirm account deletion.",
+      ),
+    ).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+    fetchMock.mockRestore();
+  });
+
+  it("disables submit while deletion is pending", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.spyOn(window, "fetch").mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(
+            () =>
+              resolve(
+                new Response(JSON.stringify({ ok: true }), {
+                  status: 200,
+                }),
+              ),
+            50,
+          );
+        }),
+    );
+    renderWithIntl(
+      <ProfileView
+        canChangePassword
+        canDeleteAccount
+        email="jane@example.com"
+        fullName="Jane Doe"
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Delete account" }));
+    await user.type(screen.getByLabelText("Account email"), "jane@example.com");
+    await user.click(
+      screen.getAllByRole("button", { name: "Delete account" }).at(-1)!,
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getAllByRole("button", { name: /delete account/i }).at(-1),
+      ).toBeDisabled();
+    });
+    fetchMock.mockRestore();
+  });
+
+  it("renders a password notice for OAuth-only accounts", () => {
+    renderWithIntl(
+      <ProfileView
+        canChangePassword={false}
+        canDeleteAccount
+        email="jane@example.com"
+        fullName="Jane Doe"
+      />,
+    );
+
+    expect(
+      screen.getByText(
+        "Password changes are available only for accounts created with email and password.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Change password" }),
+    ).not.toBeInTheDocument();
+  });
+});
