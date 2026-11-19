@@ -2,6 +2,13 @@
 
 A Next.js starter for SaaS products with one account per user, backed by Supabase Auth and Postgres.
 
+[![CI](https://github.com/MarkupChef/next-supabase-user-solo-saas-starter/actions/workflows/ci.yml/badge.svg?branch=main)](../../actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+[![Deploy to Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FMarkupChef%2Fnext-supabase-user-solo-saas-starter)
+
+![Public landing page of the SaaS starter](preview.png)
+
 ## Features and stack
 
 - Email/password registration and sign-in, password reset, Google OAuth, and sign-out.
@@ -11,7 +18,9 @@ A Next.js starter for SaaS products with one account per user, backed by Supabas
 - Supabase Auth and Postgres with user-scoped row-level security, React Hook Form with Zod, and TanStack Query.
 - Vitest, React Testing Library, and Playwright.
 
-The plan and billing pages are placeholders. Stripe integration is not included.
+## Limitations
+
+The plan and billing pages are placeholders. Payment processing and Stripe integration are out of scope. Supabase configuration is required to exercise the authenticated flows.
 
 ## Quick start
 
@@ -63,7 +72,11 @@ Open [http://localhost:3000](http://localhost:3000). Protected pages redirect to
 | `NEXT_PUBLIC_SUPABASE_URL` | Cloud Supabase project URL. Required for Auth. |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key. Required for Auth. |
 | `NEXT_PUBLIC_APP_URL` | App origin for auth callbacks. Defaults to `http://localhost:3000`. |
-| `SUPABASE_SERVICE_ROLE_KEY` | Optional server-only service role key for [account deletion](docs/features/account-deletion.md). Leave empty to disable deletion. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Optional server-only service role key for [account deletion](app/api/account/route.ts). Leave empty to disable deletion. |
+
+### Deploy to Vercel
+
+Use the deploy button above, then configure the Vercel environment variables and Supabase redirect URLs. Set `NEXT_PUBLIC_APP_URL` to the assigned deployment origin and redeploy after saving it. The public pages can run without Supabase. Use a dedicated Supabase project for testing registration and sign-in.
 
 ## Project structure
 
@@ -77,9 +90,31 @@ Open [http://localhost:3000](http://localhost:3000). Protected pages redirect to
 | `src/entities/` | Domain types, schemas, and data access. |
 | `src/shared/` | UI primitives, Supabase clients, config, i18n, and utilities. |
 | `supabase/migrations/` | Baseline schema for profiles and billing. |
-| `docs/` | Coding standards, form rules, and feature notes. |
 
-The project follows Feature-Sliced Design. Imports between slices go down the layer order from app to shared. Route files delegate page composition to views. See [AGENTS.md](AGENTS.md) for repository conventions.
+## Key decisions
+
+- **User-scoped tenancy.** Profiles and billing records belong to individual users. [The baseline migration](supabase/migrations/20260513143000_initial_saas_scaffold.sql) scopes access with Postgres row-level security.
+- **Server-side auth.** [The request proxy](proxy.ts) refreshes the Supabase session and [the protected layout](app/%5Blocale%5D/%28app%29/layout.tsx) verifies it before rendering private pages.
+- **Locale-aware routing.** [The routing configuration](src/shared/i18n/routing.ts) gives English unprefixed URLs and Ukrainian a `/uk` prefix.
+- **Thin route files.** [Feature-Sliced Design](https://feature-sliced.design/) keeps page composition in views and shared code in lower layers.
+
+```mermaid
+sequenceDiagram
+    participant Browser
+    participant Proxy as Next.js proxy
+    participant Layout as Protected layout
+    participant Auth as Supabase Auth
+
+    Browser->>Proxy: Request a protected page
+    Proxy->>Auth: Refresh or read session
+    Proxy->>Layout: Forward request with session cookies
+    Layout->>Auth: Verify user
+    alt Authenticated
+        Layout-->>Browser: Render protected page
+    else No authenticated user
+        Layout-->>Browser: Redirect to localized sign-in
+    end
+```
 
 ## Recommended AI tooling
 
@@ -96,7 +131,7 @@ If your project has no `AGENTS.md` yet, rename [AGENTS.example.md](AGENTS.exampl
 | [shadcn/ui](https://ui.shadcn.com/docs/skills) | Working with the local UI primitives, aliases, and theme configured in `components.json`. | `npx skills add shadcn/ui` |
 | [Supabase and Supabase Postgres Best Practices](https://supabase.com/docs/guides/ai-tools/ai-skills) | Auth, SSR sessions, schema migrations, and row-level security. | `npx skills add supabase/agent-skills` |
 | [Vercel React Best Practices](https://github.com/vercel-labs/agent-skills/blob/main/skills/react-best-practices/SKILL.md) | React component design, data fetching, and performance reviews. | `npx skills add vercel-labs/agent-skills --skill vercel-react-best-practices` |
-| [Feature-Sliced Design](https://fsd.how/docs/llms/) | Choosing layers, organizing slices, and defining public APIs within the conventions in [AGENTS.md](AGENTS.md). | `npx skills add https://github.com/feature-sliced/skills --skill feature-sliced-design` |
+| [Feature-Sliced Design](https://fsd.how/docs/llms/) | Choosing layers, organizing slices, and defining public APIs within the conventions in [AGENTS.example.md](AGENTS.example.md). | `npx skills add https://github.com/feature-sliced/skills --skill feature-sliced-design` |
 
 For Next.js work, read the framework documentation bundled in `node_modules/next/dist/docs/`. [Next.js agent guidance](https://github.com/vercel-labs/next-skills)
 
@@ -125,7 +160,7 @@ The Supabase Plugin bundles the Supabase MCP server and both Supabase skills. In
 2. Add or remove the corresponding catalog in [messages](src/shared/i18n/messages). Keep the same message keys across catalogs. If removing English, move the shared `Messages` type to a remaining catalog and update its consumers.
 3. Update locale-specific tests and Supabase callback URLs. Each non-default locale uses `/<locale>/auth/callback`.
 
-See the [i18n feature notes](docs/features/multiple-languages-i18n.md) for routing and test coverage.
+See the [routing configuration](src/shared/i18n/routing.ts) and [browser smoke tests](tests/e2e/app.spec.ts) for examples.
 
 ## Scripts
 
@@ -146,7 +181,7 @@ Install the test browser once with `corepack pnpm exec playwright install chromi
 
 ## Contributing
 
-The project owner develops and maintains this project. Bug reports are welcome via [GitHub Issues](../../issues). External pull requests are currently not accepted.
+The project owner develops and maintains this project. Bug reports are welcome via [GitHub Issues](../../issues). External pull requests are currently not accepted. See [Contributing](CONTRIBUTING.md) for bug report details.
 
 ## License
 
