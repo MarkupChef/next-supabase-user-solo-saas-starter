@@ -20,4 +20,3 @@ export function createDeleteAccountSchema(
 export type DeleteAccountInput = z.infer<
   ReturnType<typeof createDeleteAccountSchema>
 >;
-

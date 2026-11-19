@@ -128,4 +128,3 @@ export function DeleteAccountDialog({ email }: { email: string }) {
     </Dialog>
   );
 }
-
