@@ -1,6 +1,6 @@
 const en = {
   metadata: {
-    title: "SaaS starter",
+    title: "Next.js Supabase SaaS Starter",
     description: "A solo-user SaaS starter built with Next.js and Supabase.",
   },
   common: {

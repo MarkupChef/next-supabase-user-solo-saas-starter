@@ -2,7 +2,7 @@ import type { Messages } from "./en";
 
 const uk = {
   metadata: {
-    title: "Шаблон SaaS",
+    title: "Шаблон SaaS на Next.js і Supabase",
     description: "Шаблон SaaS для одного користувача на Next.js і Supabase.",
   },
   common: {
