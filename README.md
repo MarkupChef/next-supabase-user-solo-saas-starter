@@ -8,8 +8,6 @@ A Next.js starter for SaaS products with one account per user, backed by Supabas
 
 [**Live Demo**](https://next-supabase-user-solo-saas-starte.vercel.app)
 
-[![Deploy to Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FMarkupChef%2Fnext-supabase-user-solo-saas-starter)
-
 ![Public landing page of the SaaS starter](preview.png)
 
 ## Features and stack
@@ -79,7 +77,7 @@ Open [http://localhost:3000](http://localhost:3000). Protected pages redirect to
 
 ### Deploy to Vercel
 
-Use the deploy button above, then configure the Vercel environment variables and Supabase redirect URLs. Set `NEXT_PUBLIC_APP_URL` to the assigned deployment origin and redeploy after saving it. The public pages can run without Supabase. Use a dedicated Supabase project for testing registration and sign-in.
+Import the repository into Vercel, then configure the Vercel environment variables and Supabase redirect URLs. Set `NEXT_PUBLIC_APP_URL` to the assigned deployment origin and redeploy after saving it. The public pages can run without Supabase. Use a dedicated Supabase project for testing registration and sign-in.
 
 #### Supabase keep-alive for the demo
 
