@@ -78,6 +78,12 @@ Open [http://localhost:3000](http://localhost:3000). Protected pages redirect to
 
 Use the deploy button above, then configure the Vercel environment variables and Supabase redirect URLs. Set `NEXT_PUBLIC_APP_URL` to the assigned deployment origin and redeploy after saving it. The public pages can run without Supabase. Use a dedicated Supabase project for testing registration and sign-in.
 
+#### Supabase keep-alive for the demo
+
+Three daily Vercel cron jobs make one read-only Supabase Data API request each, during the 01:00, 09:00, and 17:00 UTC hours. They run on Production deployments, including Hobby. Add a random `CRON_SECRET` to the Production environment before deploying this version. Generate one with `node -p "require('node:crypto').randomBytes(32).toString('hex')"`. The jobs use the existing Supabase publishable key and require the baseline migration.
+
+After deploying, check the jobs in Vercel under **Schedules → Cron Jobs**. A successful request returns `204`. A Supabase or configuration failure returns `503`. Supabase Free can still pause projects with low database activity. If the project is already paused, resume it in the Supabase Dashboard.
+
 ## Project structure
 
 | Path | Responsibility |
