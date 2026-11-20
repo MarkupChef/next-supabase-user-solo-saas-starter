@@ -3,7 +3,10 @@
 A Next.js starter for SaaS products with one account per user, backed by Supabase Auth and Postgres.
 
 [![CI](https://github.com/MarkupChef/next-supabase-user-solo-saas-starter/actions/workflows/ci.yml/badge.svg?branch=main)](../../actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/MarkupChef/next-supabase-user-solo-saas-starter)](../../releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+[**Live Demo**](https://next-supabase-user-solo-saas-starte.vercel.app)
 
 [![Deploy to Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FMarkupChef%2Fnext-supabase-user-solo-saas-starter)
 
