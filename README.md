@@ -190,6 +190,10 @@ Install the test browser once with `corepack pnpm exec playwright install chromi
 
 The project owner develops and maintains this project. Bug reports are welcome via [GitHub Issues](../../issues). External pull requests are currently not accepted. See [Contributing](CONTRIBUTING.md) for bug report details.
 
+### Releases
+
+Release Please uses Conventional Commits on `main` to propose version updates in a release pull request. Use `fix:` for a patch and `feat:` for a minor release. If GitHub prompts for approval, select **Approve workflows to run** on the release pull request. Merge it after the required checks pass to publish the tag and GitHub Release.
+
 ## License
 
 [MIT](LICENSE).
